@@ -15,18 +15,18 @@ class AcronymResolver():
 
     def __init__(self, text):
         self.text = text
-        self.acro_data = self.acro_definitions(text)
-        self.resolved = self.resolve_acros(text, self.acro_data)
+        self.acronyms = self.get_acro_definitions(text)
+        self.resolved = self.resolve_acros(text)
 
-    def acro_definitions(self, text):
+    def get_acro_definitions(self, text):
         text = str(text)
         matches = re.finditer(BRACKET_ACRONYMS_RE, text)
         results = {}
-        tokens = re.split(r'\s|\.|-|,', text)
+        tokens = re.split(r'\s|-|,', text)
         tokens = [t for t in tokens if t]
         for match in matches:
             acro = match.groups()[0]
-            print(acro)
+            # print(acro)
             span = (match.start() + 1, match.end() - 1)
             acro_idx = None
             for i, token in enumerate(tokens):
@@ -51,7 +51,7 @@ class AcronymResolver():
                         letters_already.append(i)
             def_tokens = list(reversed(def_tokens))
             def_ = ' '.join(def_tokens)
-            print(def_)
+            # print(def_)
             results[acro] = {
                 'definition': def_,
             }
@@ -59,9 +59,9 @@ class AcronymResolver():
             # print('letters still:', letters_still)
         return results
 
-    def resolve_acros(self, text, acro_definitions):
+    def resolve_acros(self, text):
         text = str(text)
-        for acro, d in acro_definitions.items():
+        for acro, d in self.acronyms.items():
             regex = r'[^\(]{0}[^\)]'.format(acro)
             repl = ' {0} '.format(d['definition'])
             text = re.sub(regex, repl, text)
@@ -74,9 +74,10 @@ if __name__ == '__main__':
     except:
         print('Pass text file')
         exit()
-    with open(file, 'rb') as f:
+    with open(file, encoding='utf-8') as f:
         text = f.read()
-        acro_defs = acro_definitions(text)
-        text = resolve_acros(text, acro_defs)
-        # pprint(acro_defs)
+        acronym_resolver = AcronymResolver(text)
+        acro_defs = acronym_resolver.acronyms
+        text = acronym_resolver.resolved
+        pprint(acro_defs)
         print(text)
