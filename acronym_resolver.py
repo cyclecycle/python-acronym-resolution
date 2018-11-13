@@ -16,6 +16,7 @@ class AcronymResolver():
     def __init__(self, text):
         self.text = text
         self.acronyms = self.get_acro_definitions(text)
+        pprint(self.acronyms)
         self.resolved = self.resolve_acros(text)
 
     def get_acro_definitions(self, text):
@@ -62,6 +63,8 @@ class AcronymResolver():
     def resolve_acros(self, text):
         text = str(text)
         for acro, d in self.acronyms.items():
+            if not d['definition']:
+                continue
             regex = r'[^\(]{0}[^\)]'.format(acro)
             repl = ' {0} '.format(d['definition'])
             text = re.sub(regex, repl, text)
